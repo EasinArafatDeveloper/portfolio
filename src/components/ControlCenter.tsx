@@ -5,6 +5,7 @@ import { Briefcase, Globe, Moon, Palette, Sun, Wifi, Zap } from "lucide-react";
 import { useRef, useState } from "react";
 import { skillGroups, tools, type Skill } from "@/data/profile";
 import { useApp } from "./Providers";
+import { LiquidToggle } from "./LiquidToggle";
 import { Reveal, Section } from "./ui";
 
 function RoundToggle({
@@ -85,38 +86,29 @@ export function ControlCenter() {
         {/* Appearance — actually controls the site */}
         <Reveal delay={0.05}>
           <div className="glass squircle flex aspect-square flex-col gap-3 p-4">
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="flex flex-1 items-center gap-3 rounded-[20px] bg-fg/[0.06] px-4 text-left transition active:scale-[0.97] dark:bg-white/10"
-            >
-              <motion.span
-                key={theme}
-                initial={{ rotate: -90, scale: 0.5 }}
-                animate={{ rotate: 0, scale: 1 }}
-                className="grid size-10 place-items-center rounded-full bg-fg text-[var(--bg)]"
-              >
-                {theme === "dark" ? <Moon className="size-5" /> : <Sun className="size-5" />}
-              </motion.span>
-              <span>
-                <span className="block text-[14px] font-semibold">Appearance</span>
-                <span className="block text-[12.5px] text-fg-2">{theme === "dark" ? "Dark" : "Light"}</span>
+            <div className="flex flex-1 items-center gap-3 rounded-[20px] bg-fg/[0.06] pr-3 pl-3.5 dark:bg-white/10">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-fg text-[var(--bg)]">
+                {theme === "dark" ? <Moon className="size-[18px]" /> : <Sun className="size-[18px]" />}
               </span>
-            </button>
-            <button
-              onClick={() => setTint(!tint)}
-              className="flex flex-1 items-center gap-3 rounded-[20px] bg-fg/[0.06] px-4 text-left transition active:scale-[0.97] dark:bg-white/10"
-            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14px] font-semibold">Dark mode</span>
+                <span className="block text-[12.5px] text-fg-2">{theme === "dark" ? "On" : "Off"}</span>
+              </span>
+              <LiquidToggle checked={theme === "dark"} onChange={(v, o) => setTheme(v ? "dark" : "light", o)} label="Dark mode" icons={false} />
+            </div>
+            <div className="flex flex-1 items-center gap-3 rounded-[20px] bg-fg/[0.06] pr-3 pl-3.5 dark:bg-white/10">
               <span
-                className="grid size-10 place-items-center rounded-full text-white transition-colors"
+                className="grid size-9 shrink-0 place-items-center rounded-full text-white transition-colors"
                 style={{ background: tint ? "var(--accent)" : "rgba(127,127,127,.4)" }}
               >
-                <Palette className="size-5" />
+                <Palette className="size-[18px]" />
               </span>
-              <span>
-                <span className="block text-[14px] font-semibold">Tinted glass</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14px] font-semibold">Tinted glass</span>
                 <span className="block text-[12.5px] text-fg-2">{tint ? "On" : "Off"}</span>
               </span>
-            </button>
+              <LiquidToggle checked={tint} onChange={setTint} label="Tinted glass" onColor="#0a84ff" icons={false} />
+            </div>
           </div>
         </Reveal>
 

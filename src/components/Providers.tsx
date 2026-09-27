@@ -9,7 +9,7 @@ type Theme = "light" | "dark";
 
 type Ctx = {
   theme: Theme;
-  setTheme: (t: Theme) => void;
+  setTheme: (t: Theme, origin?: { x: number; y: number }) => void;
   tint: boolean;
   setTint: (v: boolean) => void;
   spotlight: boolean;
@@ -51,15 +51,26 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (brands?.some((b) => b.brand === "Chromium")) el.classList.add("liquid");
   }, []);
 
-  const setTheme = useCallback((t: Theme) => {
+  const setTheme = useCallback((t: Theme, origin?: { x: number; y: number }) => {
     const el = document.documentElement;
     const apply = () => {
       el.dataset.theme = t;
     };
-    // Smooth cross-fade between themes where supported.
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
-    if (doc.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) doc.startViewTransition(apply);
-    else apply();
+    // New theme grows as a circle from the control that was used (instant switch where unsupported).
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void> } };
+    if (doc.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const vt = doc.startViewTransition(apply);
+      const { x, y } = origin ?? { x: innerWidth / 2, y: 0 };
+      const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      vt.ready
+        .then(() =>
+          el.animate(
+            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+            { duration: 650, easing: "cubic-bezier(.22,.9,.26,1)", pseudoElement: "::view-transition-new(root)" },
+          ),
+        )
+        .catch(() => {});
+    } else apply();
     safeSet("theme", t);
     notify({ kind: "theme", dark: t === "dark" });
   }, []);

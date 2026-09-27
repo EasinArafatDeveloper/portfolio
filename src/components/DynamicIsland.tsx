@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
-import { ArrowUp, BellOff, Hammer, Link2, Moon, Search, Sun } from "lucide-react";
+import { ArrowUp, Hammer, Link2, Moon, Search, Sun } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sections } from "@/data/sections";
 import { profile } from "@/data/profile";
@@ -176,6 +176,62 @@ function BuildingContent({ name }: { name: string }) {
   );
 }
 
+/** Mini switch inside the island: knob glides from the old theme to the new one. */
+function ThemeContent({ dark }: { dark: boolean }) {
+  const [shown, setShown] = useState(!dark);
+  useEffect(() => {
+    const t = setTimeout(() => setShown(dark), 140);
+    return () => clearTimeout(t);
+  }, [dark]);
+  const color = shown ? "#5e5ce6" : "#ff9f0a";
+  return (
+    <Row className="justify-between pr-4 pl-1.5">
+      <motion.span
+        className="relative h-[28px] w-[50px] rounded-full"
+        initial={false}
+        animate={{ backgroundColor: color }}
+        transition={{ duration: 0.35 }}
+      >
+        <motion.span
+          className="absolute top-[3px] left-[3px] grid size-[22px] place-items-center rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,.3)]"
+          initial={false}
+          animate={{ x: shown ? 22 : 0, scaleX: [1, 1.25, 1] }}
+          transition={{ x: { type: "spring", stiffness: 520, damping: 30 }, scaleX: { duration: 0.35 } }}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={shown ? "moon" : "sun"}
+              initial={{ rotate: -120, scale: 0.3, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              exit={{ rotate: 120, scale: 0.3, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 22 }}
+              className="grid"
+              style={{ color }}
+            >
+              {shown ? <Moon className="size-3.5" fill="currentColor" /> : <Sun className="size-3.5" strokeWidth={2.75} />}
+            </motion.span>
+          </AnimatePresence>
+        </motion.span>
+      </motion.span>
+      <span className="relative h-5 w-[92px] overflow-hidden text-right">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={shown ? "d" : "l"}
+            initial={{ y: 18, opacity: 0, filter: "blur(4px)" }}
+            animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            exit={{ y: -18, opacity: 0, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            className="absolute right-0 block text-[14px] leading-5 font-semibold whitespace-nowrap"
+            style={{ color: shown ? "#a5a3ff" : "#ffb340" }}
+          >
+            {shown ? "Dark Mode" : "Light Mode"}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </Row>
+  );
+}
+
 function RecordingContent({ label, startedAt }: { label: string; startedAt: number }) {
   const [now, setNow] = useState(startedAt);
   useEffect(() => {
@@ -234,23 +290,7 @@ function activityView(a: ShownActivity, welcomeStep: number, wideW: number): Vie
       };
 
     case "theme":
-      return {
-        key: `theme-${a.dark}`,
-        size: pill(200),
-        node: (
-          <Row className="justify-between px-1.5">
-            <motion.span
-              initial={{ scale: 0.6 }}
-              animate={{ scale: 1 }}
-              className={`flex h-7 items-center gap-1 rounded-full px-3 ${a.dark ? "bg-[#ff453a]" : "bg-white/15"}`}
-            >
-              {a.dark ? <Moon className="size-4" fill="currentColor" /> : <Sun className="size-4" />}
-              {a.dark && <BellOff className="size-3.5 opacity-80" />}
-            </motion.span>
-            <span className={`pr-2.5 text-[14px] font-semibold ${a.dark ? "text-[#ff9f0a]" : "text-white"}`}>{a.dark ? "Dark" : "Light"}</span>
-          </Row>
-        ),
-      };
+      return { key: "theme", size: pill(224, 38), node: <ThemeContent key={a.id} dark={a.dark} /> };
 
     case "airdrop":
       return { key: `airdrop-${a.id}`, size: { w: wideW, h: 68, r: 34 }, node: <AirDropContent title={a.title} subtitle={a.subtitle} /> };
@@ -471,7 +511,8 @@ export function DynamicIsland() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-4">
+    // Own view-transition name: the island keeps animating live while the page switches theme.
+    <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-4" style={{ viewTransitionName: "island" }}>
       <div className="flex items-start gap-2">
         <motion.nav
           aria-label="Primary"

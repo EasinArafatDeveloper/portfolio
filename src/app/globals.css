@@ -83,6 +83,20 @@ body {
   background: color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
+/* Theme switch: circular reveal of the new page; island stays live (no snapshot ghosting) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-group(island),
+::view-transition-new(island) {
+  animation: none;
+}
+::view-transition-old(island) {
+  display: none;
+}
+
 /* Lenis */
 html.lenis,
 html.lenis body {

@@ -1,11 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { CornerDownLeft, Moon, Search, Sun, X } from "lucide-react";
+import { CornerDownLeft, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { projects, skillGroups, tools } from "@/data/profile";
 import { sections } from "@/data/sections";
 import { useApp } from "./Providers";
+import { LiquidToggle } from "./LiquidToggle";
 import { IOSAppIcon, type AppId } from "./IOSAppIcon";
 
 type Item = { label: string; hint: string; target: string; icon: string; app?: AppId };
@@ -154,14 +155,9 @@ export function QuickControls() {
       >
         <Search className="size-[19px]" strokeWidth={2.25} />
       </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.8, rotate: 30 }}
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        aria-label="Toggle dark mode"
-        className="grid size-10 place-items-center rounded-full transition hover:bg-white/15"
-      >
-        {theme === "dark" ? <Sun className="size-[19px]" strokeWidth={2.25} /> : <Moon className="size-[19px]" strokeWidth={2.25} />}
-      </motion.button>
+      <span className="mr-1 ml-0.5">
+        <LiquidToggle checked={theme === "dark"} onChange={(v, o) => setTheme(v ? "dark" : "light", o)} label="Dark mode" />
+      </span>
     </motion.div>
   );
 }
