@@ -42,6 +42,11 @@ function WavingHand({ size }: { size: number }) {
 
 /* ───────────── Viewport width (for numeric island sizes) ───────────── */
 
+const noopSubscribe = () => () => {};
+function useShortcutLabel() {
+  return useSyncExternalStore(noopSubscribe, () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"), () => "⌘K");
+}
+
 function subscribeResize(cb: () => void) {
   window.addEventListener("resize", cb);
   return () => window.removeEventListener("resize", cb);
@@ -305,6 +310,7 @@ export function DynamicIsland() {
   const [open, setOpen] = useState(false);
   const { scrollTo, setSpotlight } = useApp();
   const vw = useViewportWidth();
+  const shortcut = useShortcutLabel();
   const { scrollYProgress } = useScroll();
   const ringOffset = useTransform(scrollYProgress, [0, 1], [2 * Math.PI * 12, 0]);
 
@@ -390,10 +396,13 @@ export function DynamicIsland() {
                 setSpotlight(true);
                 setOpen(false);
               }}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/80 transition hover:bg-white/20"
+              className="drop drop-on-dark flex h-9 shrink-0 items-center gap-2 rounded-full pr-2 pl-3.5 text-[13px] font-medium text-white active:scale-95"
             >
-              <Search className="size-3.5" /> Search
-              <kbd className="ml-1 hidden text-white/40 sm:inline">⌘K</kbd>
+              <Search className="size-4" strokeWidth={2.25} />
+              Search
+              <kbd className="hidden h-6 items-center rounded-full bg-white/10 px-2 font-sans text-[11px] font-semibold text-white/60 sm:inline-flex">
+                {shortcut}
+              </kbd>
             </button>
           </div>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">

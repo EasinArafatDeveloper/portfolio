@@ -156,15 +156,10 @@ html.lenis body {
 .drop:hover {
   --drop-fill: rgba(255, 255, 255, 0.16);
 }
+/* Focus: no outer ring — the rim just brightens, like light catching the drop */
 .drop:focus-within {
-  box-shadow:
-    inset 0 1.5px 0.5px -0.5px var(--drop-rim),
-    inset 0 -1.5px 1px -0.5px var(--drop-rim-soft),
-    inset 3px 4px 8px -4px var(--drop-glow),
-    inset -4px -6px 10px -6px var(--drop-shade),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
-    0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent),
-    0 8px 22px -8px var(--drop-drop);
+  --drop-fill: rgba(255, 255, 255, 0.16);
+  --drop-glow: rgba(255, 255, 255, 0.65);
 }
 [data-theme="dark"] .drop {
   --drop-fill: rgba(255, 255, 255, 0.05);
@@ -180,8 +175,29 @@ html.lenis body {
 [data-theme="dark"] .drop::after {
   opacity: 0.22;
 }
-[data-theme="dark"] .drop:hover {
+[data-theme="dark"] .drop:hover,
+[data-theme="dark"] .drop:focus-within {
   --drop-fill: rgba(255, 255, 255, 0.09);
+  --drop-glow: rgba(255, 255, 255, 0.28);
+}
+
+/* Drop sitting on a black surface (e.g. inside the Dynamic Island), in any theme */
+.drop.drop-on-dark {
+  --drop-fill: rgba(255, 255, 255, 0.08);
+  --drop-rim: rgba(255, 255, 255, 0.5);
+  --drop-rim-soft: rgba(255, 255, 255, 0.18);
+  --drop-glow: rgba(255, 255, 255, 0.16);
+  --drop-shade: rgba(0, 0, 0, 0.5);
+  --drop-drop: rgba(0, 0, 0, 0);
+}
+.drop.drop-on-dark::before {
+  opacity: 0.55;
+}
+.drop.drop-on-dark::after {
+  opacity: 0.25;
+}
+.drop.drop-on-dark:hover {
+  --drop-fill: rgba(255, 255, 255, 0.14);
 }
 
 /* ───────────── Liquid glass material ───────────── */
