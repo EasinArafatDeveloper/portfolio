@@ -4,15 +4,19 @@
 export const profile = {
   name: "Easin Arafat",
   shortName: "Easin",
-  title: "Full-Stack Developer",
+  title: "Software Engineer",
   avatar: "/avatar.jpg",
-  tagline: "I build fast, beautiful web products — from Chrome extensions to e-commerce brands.",
+  // Hero headline: `headline.lead` is highlighted, `headline.rest` follows it.
+  headline: { lead: "Software Engineer", rest: "turning ideas into fast, reliable products." },
+  tagline:
+    "I design and build full-stack web apps, SaaS tools and Chrome extensions with React, Next.js, Node.js and MongoDB — from first sketch to production.",
+  focus: ["Full-stack web apps", "SaaS & Chrome extensions", "E-commerce platforms"],
   location: "Dhaka, Bangladesh",
   timezone: "Asia/Dhaka",
   status: "Available for freelance & full-time",
   nowBuilding: "FB Ad Lead Finder",
   about:
-    "I'm a full-stack developer who loves turning ideas into polished, production-ready products. I work across the stack — React & Next.js on the front, Node.js & MongoDB on the back — and I care deeply about details: motion, performance and the feeling a product gives you.", // TODO: personalise
+    "I'm a software engineer who loves turning ideas into polished, production-ready products. I work across the stack — React & Next.js on the front, Node.js & MongoDB on the back — and I care deeply about details: motion, performance and the feeling a product gives you.", // TODO: personalise
   email: "hello@example.com", // TODO: real contact email
   socials: {
     github: "https://github.com/Easin2023",
