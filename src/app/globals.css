@@ -1,26 +1,225 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ───────────── Design tokens ───────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #eef1f7;
+  --fg: #0b0b0f;
+  --fg-2: rgba(11, 11, 15, 0.62);
+  --fg-3: rgba(11, 11, 15, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.34);
+  --glass-bg-strong: rgba(255, 255, 255, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-edge: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 10px 40px -10px rgba(30, 40, 80, 0.25), 0 2px 6px rgba(30, 40, 80, 0.06);
+  --glass-tint: rgba(255, 255, 255, 0);
+  --separator: rgba(11, 11, 15, 0.08);
+  --accent: #0a84ff;
+  --island: #000;
+  --blob-1: #7aa7ff;
+  --blob-2: #ff9ad5;
+  --blob-3: #8cf5d2;
+  --blob-4: #ffd27a;
+  --wall-base: #e8edf7;
+  --radius: 28px;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #05060a;
+  --fg: #f5f6fa;
+  --fg-2: rgba(245, 246, 250, 0.64);
+  --fg-3: rgba(245, 246, 250, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-strong: rgba(30, 32, 40, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-edge: rgba(255, 255, 255, 0.35);
+  --glass-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --separator: rgba(255, 255, 255, 0.08);
+  --accent: #0a84ff;
+  --blob-1: #2b50ff;
+  --blob-2: #b0249b;
+  --blob-3: #0aa39a;
+  --blob-4: #ff6a00;
+  --wall-base: #05060a;
+  color-scheme: dark;
+}
+
+[data-tint="true"] {
+  --glass-tint: color-mix(in oklab, var(--accent) 22%, transparent);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-sep: var(--separator);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "SF Pro Display", sans-serif;
+  --font-display: var(--font-display), var(--font-inter), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* No background here: it would paint over the fixed z-index:-10 wallpaper (html carries --bg). */
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* In the components layer so Tailwind utilities (fixed, absolute, rounded…) can override. */
+@layer components {
+/* ───────────── Liquid glass material ───────────── */
+.glass {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(var(--glass-tint), var(--glass-tint)), var(--glass-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  backdrop-filter: blur(22px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-edge),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 20px 0 rgba(255, 255, 255, 0.06),
+    var(--glass-shadow);
+}
+
+/* Specular highlight that follows the pointer (set --mx/--my via JS) */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(
+      420px circle at var(--mx, 20%) var(--my, 0%),
+      rgba(255, 255, 255, 0.28),
+      transparent 45%
+    );
+  opacity: 0.9;
+  transition: opacity 0.4s;
+}
+[data-theme="dark"] .glass::before {
+  background: radial-gradient(420px circle at var(--mx, 20%) var(--my, 0%), rgba(255, 255, 255, 0.1), transparent 45%);
+}
+
+/* Rim light — the bright liquid edge */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0.05) 35%,
+    rgba(255, 255, 255, 0.02) 65%,
+    rgba(255, 255, 255, 0.5)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+}
+[data-theme="dark"] .glass::after {
+  opacity: 0.35;
+}
+
+.glass-strong {
+  background: linear-gradient(var(--glass-tint), var(--glass-tint)), var(--glass-bg-strong);
+}
+
+/* Real refraction — Chromium only (html gets .liquid via JS) */
+html.liquid .glass-refract {
+  backdrop-filter: blur(3px) url(#liquid-refraction) blur(16px) saturate(190%);
+}
+
+/* Squircle-ish continuous corners */
+.squircle {
+  border-radius: var(--radius);
+}
+
+}
+
+/* ───────────── Wallpaper ───────────── */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background: var(--wall-base);
+}
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.85;
+  will-change: transform;
+}
+[data-theme="dark"] .blob {
+  opacity: 0.6;
+}
+.grain {
+  position: absolute;
+  inset: -50%;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  pointer-events: none;
+}
+
+/* ───────────── Utilities ───────────── */
+.text-balance {
+  text-wrap: balance;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none !important;
+  }
 }
