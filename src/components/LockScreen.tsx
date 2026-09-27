@@ -58,7 +58,8 @@ export function LockScreen() {
           initial={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ delay: 0.3, type: "spring", stiffness: 120, damping: 20 }}
-          className="font-display text-[clamp(96px,22vw,188px)] leading-[0.9] font-bold tracking-[-0.06em] tabular-nums"
+          // Padding gives background-clip:text room for glyphs that overhang the box (tight tracking), so edges aren't cut off.
+          className="font-display px-[0.08em] py-[0.04em] text-[clamp(96px,22vw,188px)] leading-[0.9] font-bold tracking-[-0.045em] tabular-nums"
           style={{
             background: "linear-gradient(180deg, var(--fg) 30%, color-mix(in oklab, var(--fg) 55%, transparent))",
             WebkitBackgroundClip: "text",
