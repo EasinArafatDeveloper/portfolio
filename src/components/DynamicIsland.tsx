@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
-import { ArrowUp, BellOff, Hammer, Link2, Lock, LockOpen, Moon, ScanFace, Search, Sun } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowUp, BellOff, Hammer, Link2, Moon, Search, Sun } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sections } from "@/data/sections";
 import { profile } from "@/data/profile";
 import { useActiveSection } from "@/hooks/useActiveSection";
@@ -10,7 +10,43 @@ import { dismiss, notify, useIslandActivity, type ShownActivity } from "@/lib/is
 import { useApp } from "./Providers";
 
 const ids = sections.map((s) => s.id);
-const spring = { type: "spring" as const, stiffness: 400, damping: 30 };
+const spring = { type: "spring" as const, stiffness: 380, damping: 32, mass: 0.9 };
+
+// Microsoft Fluent 3D emoji (MIT) — close to the iOS 3D emoji look.
+const EMOJI = {
+  wave: "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Waving%20hand/Default/3D/waving_hand_3d_default.png",
+  sparkles: "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Sparkles/3D/sparkles_3d.png",
+};
+
+function Emoji3D({ src, alt, size, fallback }: { src: string; alt: string; size: number; fallback: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <span style={{ fontSize: size * 0.85, lineHeight: 1 }}>{fallback}</span>;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} width={size} height={size} draggable={false} onError={() => setFailed(true)} className="select-none" />;
+}
+
+function WavingHand({ size }: { size: number }) {
+  return (
+    <motion.span
+      className="inline-grid"
+      style={{ originX: 0.7, originY: 0.85 }}
+      animate={{ rotate: [0, 16, -8, 16, -6, 12, 0] }}
+      transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.3 }}
+    >
+      <Emoji3D src={EMOJI.wave} alt="Waving hand" size={size} fallback="👋" />
+    </motion.span>
+  );
+}
+
+/* ───────────── Viewport width (for numeric island sizes) ───────────── */
+
+function subscribeResize(cb: () => void) {
+  window.addEventListener("resize", cb);
+  return () => window.removeEventListener("resize", cb);
+}
+function useViewportWidth() {
+  return useSyncExternalStore(subscribeResize, () => window.innerWidth, () => 1024);
+}
 
 /* ───────────── Small building blocks ───────────── */
 
@@ -18,7 +54,7 @@ function Ring({ progress, color, size = 26, stroke = 3, children }: { progress: 
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <span className="relative grid place-items-center" style={{ width: size, height: size }}>
+    <span className="relative grid shrink-0 place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,.18)" strokeWidth={stroke} />
         <motion.circle
@@ -40,14 +76,14 @@ function Ring({ progress, color, size = 26, stroke = 3, children }: { progress: 
   );
 }
 
-function AnimatedCheck({ size = 56, color = "#30d158" }: { size?: number; color?: string }) {
+function AnimatedCheck({ size = 34, color = "#30d158" }: { size?: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 52 52" fill="none">
-      <motion.circle cx="26" cy="26" r="23" stroke={color} strokeWidth="3" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.45 }} />
+    <svg width={size} height={size} viewBox="0 0 52 52" fill="none" className="shrink-0">
+      <motion.circle cx="26" cy="26" r="23" stroke={color} strokeWidth="3.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.45 }} />
       <motion.path
         d="M15 27l7 7 15-16"
         stroke={color}
-        strokeWidth="3.5"
+        strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
         initial={{ pathLength: 0 }}
@@ -60,7 +96,7 @@ function AnimatedCheck({ size = 56, color = "#30d158" }: { size?: number; color?
 
 function AirDropIcon() {
   return (
-    <span className="relative grid size-11 place-items-center">
+    <span className="relative grid size-11 shrink-0 place-items-center">
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
@@ -75,113 +111,38 @@ function AirDropIcon() {
   );
 }
 
-/** Island body shapes. Radius = half the height for pills. */
-function Pill({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, filter: "blur(6px)" }}
-      animate={{ opacity: 1, filter: "blur(0px)" }}
-      exit={{ opacity: 0, filter: "blur(6px)" }}
-      className={`flex h-9 items-center justify-between gap-5 px-2 ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
+/* ───────────── Island views ───────────── */
+// Every view declares its exact size; the island shell animates to it and the
+// content is centred inside, so nothing drifts into a corner mid-transition.
+
+type Size = { w: number; h: number; r: number };
+type View = { key: string; size: Size; node: React.ReactNode };
+
+const pill = (w: number, h = 36): Size => ({ w, h, r: h / 2 });
+
+function Row({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`flex h-full w-full items-center ${className}`}>{children}</div>;
 }
 
-function Wide({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
-      animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-      exit={{ opacity: 0, filter: "blur(8px)" }}
-      className="flex h-[68px] w-[min(88vw,360px)] items-center gap-3 px-3"
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* ───────────── Activities ───────────── */
-
-function UnlockActivity() {
-  // lock → Face ID scan → success → unlocked
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const ts = [700, 1900, 2750].map((ms, i) => setTimeout(() => setStep(i + 1), ms));
-    return () => ts.forEach(clearTimeout);
-  }, []);
-
-  const body =
-    step === 1 || step === 2 ? (
-      <motion.div
-        key="faceid"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="relative grid size-[116px] place-items-center"
-      >
-        {step === 1 ? (
-          <>
-            <ScanFace className="size-14 text-white/85" strokeWidth={1.4} />
-            <motion.span
-              className="absolute inset-x-6 h-[2px] rounded-full bg-gradient-to-r from-transparent via-[#30d158] to-transparent"
-              animate={{ top: ["22%", "78%", "22%"] }}
-              transition={{ duration: 1.1, ease: "easeInOut" }}
-            />
-          </>
-        ) : (
-          <AnimatedCheck />
-        )}
-      </motion.div>
-    ) : (
-    <Pill key={step === 0 ? "locked" : "unlocked"} className="w-[190px]">
-      <motion.span initial={{ rotate: step === 3 ? -20 : 0 }} animate={{ rotate: 0 }} className="grid size-6 place-items-center">
-        {step === 0 ? <Lock className="size-4" strokeWidth={2.5} /> : <LockOpen className="size-4" strokeWidth={2.5} />}
-      </motion.span>
-      <span className="text-[12.5px] font-semibold text-white/70">{step === 0 ? "Locked" : "Welcome"}</span>
-      <span className="size-6" />
-    </Pill>
-    );
-
-  return <AnimatePresence mode="popLayout">{body}</AnimatePresence>;
-}
-
-function ThemeActivity({ dark }: { dark: boolean }) {
-  return (
-    <Pill className="w-[210px]">
-      <motion.span
-        initial={{ scale: 0.6 }}
-        animate={{ scale: 1 }}
-        className={`flex h-7 items-center gap-1 rounded-full px-3 ${dark ? "bg-[#ff453a]" : "bg-white/15"}`}
-      >
-        {dark ? <Moon className="size-4" fill="currentColor" /> : <Sun className="size-4" />}
-        {dark && <BellOff className="size-3.5 opacity-80" />}
-      </motion.span>
-      <span className={`pr-2 text-[14px] font-semibold ${dark ? "text-[#ff9f0a]" : "text-white"}`}>{dark ? "Dark" : "Light"}</span>
-    </Pill>
-  );
-}
-
-function AirDropActivity({ title, subtitle }: { title: string; subtitle: string }) {
+function AirDropContent({ title, subtitle }: { title: string; subtitle: string }) {
   const [done, setDone] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setDone(true), 1500);
     return () => clearTimeout(t);
   }, []);
   return (
-    <Wide>
+    <Row className="gap-3 px-3">
       <AirDropIcon />
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-semibold">{done ? "Delivered" : title}</span>
+        <span className="block text-[15px] leading-tight font-semibold">{done ? "Delivered" : title}</span>
         <span className="block truncate text-[12.5px] text-white/55">{subtitle}</span>
       </span>
-      {done ? <AnimatedCheck size={34} color="#0a84ff" /> : <Ring progress={1} color="#0a84ff" size={34} />}
-    </Wide>
+      {done ? <AnimatedCheck color="#0a84ff" /> : <Ring progress={1} color="#0a84ff" size={34} />}
+    </Row>
   );
 }
 
-function BuildingActivity({ name }: { name: string }) {
+function BuildingContent({ name }: { name: string }) {
   const [n, setN] = useState(0);
   useEffect(() => {
     let v = 0;
@@ -193,56 +154,22 @@ function BuildingActivity({ name }: { name: string }) {
     return () => clearInterval(t);
   }, []);
   return (
-    <Wide>
-      <span className="grid size-11 place-items-center rounded-full bg-white/10">
+    <Row className="gap-3 px-3">
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10">
         <Hammer className="size-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[12px] font-medium text-white/55">Now building</span>
+        <span className="block text-[12px] leading-tight font-medium text-white/55">Now building</span>
         <span className="block truncate text-[15px] font-semibold">{name}</span>
       </span>
       <Ring progress={1} color="#30d158" size={40} stroke={3.5}>
         <span className="text-[11px] font-bold tabular-nums">{n}</span>
       </Ring>
-    </Wide>
+    </Row>
   );
 }
 
-function AvailableActivity() {
-  return (
-    <Pill className="w-[220px]">
-      <span className="grid size-6 place-items-center rounded-full bg-[#30d158]/20 text-[#30d158]">
-        <Link2 className="size-4" strokeWidth={2.5} />
-      </span>
-      <span className="text-[13px] font-semibold text-[#30d158]">Available for hire</span>
-      <span className="size-2" />
-    </Pill>
-  );
-}
-
-function FindMyActivity() {
-  return (
-    <Wide>
-      <span className="relative grid size-11 place-items-center">
-        {[0, 1].map((i) => (
-          <motion.span
-            key={i}
-            className="absolute size-11 rounded-full bg-[#30d158]/40"
-            animate={{ scale: [0.3, 1.3], opacity: [0.8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.6, delay: i * 0.8 }}
-          />
-        ))}
-        <span className="relative size-4 rounded-full border-[3px] border-white bg-[#30d158]" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-semibold">Find {profile.shortName}&apos;s work</span>
-        <span className="block text-[12.5px] text-white/55">Tap to locate projects</span>
-      </span>
-    </Wide>
-  );
-}
-
-function RecordingActivity({ label, startedAt }: { label: string; startedAt: number }) {
+function RecordingContent({ label, startedAt }: { label: string; startedAt: number }) {
   const [now, setNow] = useState(startedAt);
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -250,34 +177,121 @@ function RecordingActivity({ label, startedAt }: { label: string; startedAt: num
   }, []);
   const s = Math.max(0, Math.floor((now - startedAt) / 1000));
   return (
-    <Pill className="w-[250px]">
-      <span className="flex items-center gap-2">
-        <motion.span className="size-2.5 rounded-full bg-[#ff453a]" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} />
-        <span className="max-w-[140px] truncate text-[12.5px] font-semibold">{label}</span>
+    <Row className="justify-between gap-3 px-3.5">
+      <span className="flex min-w-0 items-center gap-2">
+        <motion.span className="size-2.5 shrink-0 rounded-full bg-[#ff453a]" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} />
+        <span className="truncate text-[12.5px] font-semibold">{label}</span>
       </span>
-      <span className="pr-1.5 text-[13px] font-semibold text-[#ff453a] tabular-nums">
+      <span className="text-[13px] font-semibold text-[#ff453a] tabular-nums">
         {Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}
       </span>
-    </Pill>
+    </Row>
   );
 }
 
-function ActivityView({ a }: { a: ShownActivity }) {
+function activityView(a: ShownActivity, welcomeStep: number, wideW: number): View {
   switch (a.kind) {
-    case "unlock":
-      return <UnlockActivity />;
+    case "welcome":
+      if (welcomeStep === 0)
+        return {
+          key: "w0",
+          size: pill(124),
+          node: (
+            <Row className="justify-center gap-2">
+              <Emoji3D src={EMOJI.wave} alt="" size={22} fallback="👋" />
+              <span className="text-[13px] font-semibold">Hi</span>
+            </Row>
+          ),
+        };
+      if (welcomeStep === 1)
+        return {
+          key: "w1",
+          size: { w: 176, h: 176, r: 52 },
+          node: (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2.5">
+              <WavingHand size={88} />
+              <span className="text-[16px] font-semibold tracking-tight">Hello there!</span>
+            </div>
+          ),
+        };
+      return {
+        key: "w2",
+        size: pill(Math.min(wideW, 300), 44),
+        node: (
+          <Row className="justify-center gap-2.5 px-4">
+            <WavingHand size={26} />
+            <span className="truncate text-[14px] font-semibold">Welcome to my portfolio</span>
+            <Emoji3D src={EMOJI.sparkles} alt="" size={22} fallback="✨" />
+          </Row>
+        ),
+      };
+
     case "theme":
-      return <ThemeActivity dark={a.dark} />;
+      return {
+        key: `theme-${a.dark}`,
+        size: pill(200),
+        node: (
+          <Row className="justify-between px-1.5">
+            <motion.span
+              initial={{ scale: 0.6 }}
+              animate={{ scale: 1 }}
+              className={`flex h-7 items-center gap-1 rounded-full px-3 ${a.dark ? "bg-[#ff453a]" : "bg-white/15"}`}
+            >
+              {a.dark ? <Moon className="size-4" fill="currentColor" /> : <Sun className="size-4" />}
+              {a.dark && <BellOff className="size-3.5 opacity-80" />}
+            </motion.span>
+            <span className={`pr-2.5 text-[14px] font-semibold ${a.dark ? "text-[#ff9f0a]" : "text-white"}`}>{a.dark ? "Dark" : "Light"}</span>
+          </Row>
+        ),
+      };
+
     case "airdrop":
-      return <AirDropActivity title={a.title} subtitle={a.subtitle} />;
+      return { key: `airdrop-${a.id}`, size: { w: wideW, h: 68, r: 34 }, node: <AirDropContent title={a.title} subtitle={a.subtitle} /> };
+
     case "building":
-      return <BuildingActivity name={a.name} />;
+      return { key: `building-${a.id}`, size: { w: wideW, h: 68, r: 34 }, node: <BuildingContent name={a.name} /> };
+
     case "available":
-      return <AvailableActivity />;
+      return {
+        key: "available",
+        size: pill(210),
+        node: (
+          <Row className="justify-center gap-2.5">
+            <span className="grid size-6 place-items-center rounded-full bg-[#30d158]/20 text-[#30d158]">
+              <Link2 className="size-4" strokeWidth={2.5} />
+            </span>
+            <span className="text-[13px] font-semibold text-[#30d158]">Available for hire</span>
+          </Row>
+        ),
+      };
+
     case "findMy":
-      return <FindMyActivity />;
+      return {
+        key: "findMy",
+        size: { w: wideW, h: 68, r: 34 },
+        node: (
+          <Row className="gap-3 px-3">
+            <span className="relative grid size-11 shrink-0 place-items-center">
+              {[0, 1].map((i) => (
+                <motion.span
+                  key={i}
+                  className="absolute size-11 rounded-full bg-[#30d158]/40"
+                  animate={{ scale: [0.3, 1.3], opacity: [0.8, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.6, delay: i * 0.8 }}
+                />
+              ))}
+              <span className="relative size-4 rounded-full border-[3px] border-white bg-[#30d158]" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] leading-tight font-semibold">Find {profile.shortName}&apos;s work</span>
+              <span className="block text-[12.5px] text-white/55">Tap to locate projects</span>
+            </span>
+          </Row>
+        ),
+      };
+
     case "recording":
-      return <RecordingActivity label={a.label} startedAt={a.startedAt} />;
+      return { key: `rec-${a.id}`, size: pill(250), node: <RecordingContent label={a.label} startedAt={a.startedAt} /> };
   }
 }
 
@@ -288,16 +302,27 @@ export function DynamicIsland() {
   const activity = useIslandActivity();
   const [open, setOpen] = useState(false);
   const { scrollTo, setSpotlight } = useApp();
-  const current = sections.find((s) => s.id === active) ?? sections[0];
-  const Icon = current.icon;
+  const vw = useViewportWidth();
   const { scrollYProgress } = useScroll();
   const ringOffset = useTransform(scrollYProgress, [0, 1], [2 * Math.PI * 12, 0]);
 
-  // Intro: Face ID unlock
+  const wideW = Math.min(vw - 32, 360);
+  const menuW = Math.min(vw - 32, 560);
+
+  // Welcome intro
   useEffect(() => {
-    const t = setTimeout(() => notify({ kind: "unlock" }), 350);
+    const t = setTimeout(() => notify({ kind: "welcome" }), 400);
     return () => clearTimeout(t);
   }, []);
+
+  // Welcome stages: small "Hi" → big waving hand → welcome banner
+  const [welcomeStep, setWelcomeStep] = useState(0);
+  const welcomeId = activity?.kind === "welcome" ? activity.id : null;
+  useEffect(() => {
+    if (welcomeId === null) return;
+    const ts = [0, 650, 2700].map((ms, i) => setTimeout(() => setWelcomeStep(i), ms));
+    return () => ts.forEach(clearTimeout);
+  }, [welcomeId]);
 
   // First visit to a section triggers its activity
   const seen = useRef(new Set<string>());
@@ -328,9 +353,113 @@ export function DynamicIsland() {
     };
   }, [active]);
 
+  // Measure the expanded menu so the shell can animate to its real height
+  const [menuH, setMenuH] = useState(0);
+  const menuRef = useRef<HTMLDivElement>(null);
   const expanded = open && !activity;
-  const tall = activity && (activity.kind === "unlock" ? false : ["airdrop", "building", "findMy"].includes(activity.kind));
-  const radius = expanded ? 32 : tall ? 34 : 999;
+  useEffect(() => {
+    const el = menuRef.current;
+    if (!expanded || !el) return;
+    const ro = new ResizeObserver(([e]) => setMenuH(Math.ceil(e.borderBoxSize[0].blockSize)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [expanded]);
+
+  const current = sections.find((s) => s.id === active) ?? sections[0];
+  const Icon = current.icon;
+
+  let view: View;
+  if (activity) {
+    view = activityView(activity, welcomeStep, wideW);
+  } else if (expanded) {
+    view = {
+      key: "menu",
+      size: { w: menuW, h: menuH || (vw >= 640 ? 146 : 222), r: 32 },
+      node: (
+        <div ref={menuRef} className="w-full self-start p-3">
+          <div className="mb-3 flex items-center gap-3 px-1">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#0a84ff] to-[#5e5ce6] text-lg font-bold">
+              {profile.shortName[0]}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold">{profile.name}</p>
+              <p className="truncate text-[12px] text-white/55">Now building · {profile.nowBuilding}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSpotlight(true);
+                setOpen(false);
+              }}
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/80 transition hover:bg-white/20"
+            >
+              <Search className="size-3.5" /> Search
+              <kbd className="ml-1 hidden text-white/40 sm:inline">⌘K</kbd>
+            </button>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
+            {sections.map((s) => {
+              const SIcon = s.icon;
+              const isActive = s.id === active;
+              return (
+                <button
+                  key={s.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scrollTo(s.id);
+                    setOpen(false);
+                  }}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 text-[10.5px] font-medium transition active:scale-95 ${
+                    isActive ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/8 hover:text-white"
+                  }`}
+                >
+                  <span className="grid size-8 place-items-center rounded-[10px]" style={{ background: s.color }}>
+                    <SIcon className="size-4" strokeWidth={2.2} />
+                  </span>
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    };
+  } else {
+    view = {
+      key: "compact",
+      size: pill(184),
+      node: (
+        <Row className="justify-between px-1.5">
+          <motion.span
+            key={current.id}
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="grid size-6 place-items-center rounded-full"
+            style={{ background: current.color }}
+          >
+            <Icon className="size-3.5" strokeWidth={2.5} />
+          </motion.span>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={current.label}
+              initial={{ y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -8, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="text-[13px] font-semibold tracking-tight"
+            >
+              {current.label}
+            </motion.span>
+          </AnimatePresence>
+          <span className="relative mr-2 flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#30d158] opacity-70" />
+            <span className="relative inline-flex size-2 rounded-full bg-[#30d158]" />
+          </span>
+        </Row>
+      ),
+    };
+  }
+
   const showBubble = !expanded && (activity?.kind === "available" || (!activity && active !== "lock"));
 
   function onIslandClick() {
@@ -346,104 +475,29 @@ export function DynamicIsland() {
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-4">
       <div className="flex items-start gap-2">
         <motion.nav
-          layout
           aria-label="Primary"
           aria-live="polite"
-          onHoverStart={() => setOpen(true)}
+          onHoverStart={() => !activity && setOpen(true)}
           onHoverEnd={() => setOpen(false)}
           onClick={onIslandClick}
-          className="pointer-events-auto cursor-pointer overflow-hidden bg-black text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,.6)]"
-          style={{ borderRadius: activity?.kind === "unlock" ? 40 : radius }}
+          initial={false}
+          animate={{ width: view.size.w, height: view.size.h, borderRadius: view.size.r }}
           transition={spring}
+          className="pointer-events-auto relative cursor-pointer overflow-hidden bg-black text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,.6)]"
         >
-          <AnimatePresence mode="popLayout" initial={false}>
-            {activity ? (
-              <motion.div key={`a-${activity.id}`} layout="position">
-                <ActivityView a={activity} />
-              </motion.div>
-            ) : !expanded ? (
-              <Pill key="compact" className="min-w-[180px]">
-                <motion.span
-                  key={current.id}
-                  initial={{ scale: 0.4, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="grid size-6 place-items-center rounded-full"
-                  style={{ background: current.color }}
-                >
-                  <Icon className="size-3.5" strokeWidth={2.5} />
-                </motion.span>
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={current.label}
-                    initial={{ y: 8, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -8, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-[13px] font-semibold tracking-tight"
-                  >
-                    {current.label}
-                  </motion.span>
-                </AnimatePresence>
-                <span className="relative mr-1.5 flex size-2">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#30d158] opacity-70" />
-                  <span className="relative inline-flex size-2 rounded-full bg-[#30d158]" />
-                </span>
-              </Pill>
-            ) : (
-              <motion.div
-                key="expanded"
-                layout="position"
-                initial={{ opacity: 0, filter: "blur(8px)", scale: 0.96 }}
-                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-                exit={{ opacity: 0, filter: "blur(8px)" }}
-                className="w-[min(92vw,560px)] p-3"
-              >
-                <div className="mb-3 flex items-center gap-3 px-1">
-                  <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#0a84ff] to-[#5e5ce6] text-lg font-bold">
-                    {profile.shortName[0]}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold">{profile.name}</p>
-                    <p className="truncate text-[12px] text-white/55">Now building · {profile.nowBuilding}</p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSpotlight(true);
-                      setOpen(false);
-                    }}
-                    className="flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/80 transition hover:bg-white/20"
-                  >
-                    <Search className="size-3.5" /> Search
-                    <kbd className="ml-1 hidden text-white/40 sm:inline">⌘K</kbd>
-                  </button>
-                </div>
-                <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
-                  {sections.map((s) => {
-                    const SIcon = s.icon;
-                    const isActive = s.id === active;
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          scrollTo(s.id);
-                          setOpen(false);
-                        }}
-                        className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 text-[10.5px] font-medium transition active:scale-95 ${
-                          isActive ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/8 hover:text-white"
-                        }`}
-                      >
-                        <span className="grid size-8 place-items-center rounded-[10px]" style={{ background: s.color }}>
-                          <SIcon className="size-4" strokeWidth={2.2} />
-                        </span>
-                        {s.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={view.key}
+              className="absolute inset-0 flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)", transition: { delay: 0.1, duration: 0.3 } }}
+              exit={{ opacity: 0, scale: 0.92, filter: "blur(4px)", transition: { duration: 0.12 } }}
+            >
+              {/* Content is laid out at the view's final size so it never reflows while the shell morphs */}
+              <div className="flex shrink-0" style={{ width: view.size.w, height: view.size.h }}>
+                {view.node}
+              </div>
+            </motion.div>
           </AnimatePresence>
         </motion.nav>
 

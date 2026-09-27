@@ -8,7 +8,7 @@ import { useSyncExternalStore } from "react";
  * (e.g. recording) stays until cleared and shows whenever the queue is empty.
  */
 export type Activity =
-  | { kind: "unlock" }
+  | { kind: "welcome" }
   | { kind: "theme"; dark: boolean }
   | { kind: "airdrop"; title: string; subtitle: string }
   | { kind: "building"; name: string }
@@ -19,7 +19,7 @@ export type Activity =
 export type ShownActivity = Activity & { id: number };
 
 const DURATION: Record<Activity["kind"], number> = {
-  unlock: 3400,
+  welcome: 4200,
   theme: 1700,
   airdrop: 3200,
   building: 3200,
