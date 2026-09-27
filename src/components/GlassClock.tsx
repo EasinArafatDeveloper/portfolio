@@ -15,12 +15,12 @@ export function GlassClock({ time, label }: { time: string; label: string }) {
     <svg
       role="img"
       aria-label={label}
-      className="block h-[clamp(170px,34vw,300px)] w-full overflow-visible"
+      className="block h-[clamp(135px,27vw,230px)] w-full overflow-visible"
       style={{
         fontFamily: "var(--font-clock), var(--font-display), system-ui, sans-serif",
-        // Narrowest width, tallest figures, thin-ish weight
-        fontVariationSettings: "'wdth' 25, 'YTFI' 788, 'opsz' 144, 'wght' 380",
-        fontSize: "clamp(190px, 40vw, 340px)",
+        // Condensed width, tall figures, medium weight
+        fontVariationSettings: "'wdth' 40, 'YTFI' 740, 'opsz' 144, 'wght' 540",
+        fontSize: "clamp(150px, 31vw, 260px)",
       }}
     >
       <defs>
