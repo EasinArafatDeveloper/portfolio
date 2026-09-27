@@ -9,6 +9,7 @@ import { Avatar } from "./Avatar";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { dismiss, notify, useIslandActivity, type ShownActivity } from "@/lib/island";
 import { useApp } from "./Providers";
+import { IOSAppIcon } from "./IOSAppIcon";
 
 const ids = sections.map((s) => s.id);
 const spring = { type: "spring" as const, stiffness: 380, damping: 32, mass: 0.9 };
@@ -367,7 +368,6 @@ export function DynamicIsland() {
   }, [expanded]);
 
   const current = sections.find((s) => s.id === active) ?? sections[0];
-  const Icon = current.icon;
 
   let view: View;
   if (activity) {
@@ -398,7 +398,6 @@ export function DynamicIsland() {
           </div>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
             {sections.map((s) => {
-              const SIcon = s.icon;
               const isActive = s.id === active;
               return (
                 <button
@@ -408,14 +407,12 @@ export function DynamicIsland() {
                     scrollTo(s.id);
                     setOpen(false);
                   }}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl py-2 text-[10.5px] font-medium transition active:scale-95 ${
-                    isActive ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/8 hover:text-white"
+                  className={`group flex flex-col items-center gap-1.5 rounded-[18px] pt-2 pb-1.5 text-[11px] font-medium tracking-tight transition active:scale-90 ${
+                    isActive ? "bg-white/[0.12] text-white" : "text-white/75 hover:bg-white/[0.07] hover:text-white"
                   }`}
                 >
-                  <span className="grid size-8 place-items-center rounded-[10px]" style={{ background: s.color }}>
-                    <SIcon className="size-4" strokeWidth={2.2} />
-                  </span>
-                  {s.label}
+                  <IOSAppIcon app={s.id} size={46} shadow={false} className="transition group-hover:-translate-y-0.5" />
+                  <span className="max-w-full truncate px-0.5">{"short" in s ? s.short : s.label}</span>
                 </button>
               );
             })}
@@ -429,14 +426,8 @@ export function DynamicIsland() {
       size: pill(184),
       node: (
         <Row className="justify-between px-1.5">
-          <motion.span
-            key={current.id}
-            initial={{ scale: 0.4, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="grid size-6 place-items-center rounded-full"
-            style={{ background: current.color }}
-          >
-            <Icon className="size-3.5" strokeWidth={2.5} />
+          <motion.span key={current.id} initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid">
+            <IOSAppIcon app={current.id} size={24} shadow={false} />
           </motion.span>
           <AnimatePresence mode="wait" initial={false}>
             <motion.span

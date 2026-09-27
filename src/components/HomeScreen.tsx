@@ -7,43 +7,33 @@ import { sections } from "@/data/sections";
 import { useApp } from "./Providers";
 import { Avatar } from "./Avatar";
 import { CountUp, Magnetic, Reveal, Section, Tilt } from "./ui";
-import { FacebookIcon, GithubIcon, LinkedinIcon } from "./BrandIcons";
+import { IOSAppIcon, type AppId } from "./IOSAppIcon";
 
-const socialApps = [
-  { label: "GitHub", href: profile.socials.github, Icon: GithubIcon, bg: "linear-gradient(145deg,#3a3a3c,#0b0b0f)" },
-  { label: "LinkedIn", href: profile.socials.linkedin, Icon: LinkedinIcon, bg: "linear-gradient(145deg,#2a8cff,#0a66c2)" },
-  { label: "Facebook", href: profile.socials.facebook, Icon: FacebookIcon, bg: "linear-gradient(145deg,#4b9bff,#1877f2)" },
+const socialApps: { label: string; href: string; app: AppId }[] = [
+  { label: "GitHub", href: profile.socials.github, app: "github" },
+  { label: "LinkedIn", href: profile.socials.linkedin, app: "linkedin" },
+  { label: "Facebook", href: profile.socials.facebook, app: "facebook" },
 ];
 
 function AppIcon({
   label,
-  bg,
-  children,
+  app,
   onClick,
   href,
   i,
 }: {
   label: string;
-  bg: string;
-  children: React.ReactNode;
+  app: AppId;
   onClick?: () => void;
   href?: string;
   i: number;
 }) {
   const inner = (
     <>
-      <motion.span
-        whileHover={{ y: -4, scale: 1.06 }}
-        whileTap={{ scale: 0.88 }}
-        className="relative grid size-[62px] place-items-center rounded-[18px] text-white shadow-[0_8px_20px_-6px_rgba(0,0,0,.35)] sm:size-[70px] sm:rounded-[20px]"
-        style={{ background: bg }}
-      >
-        {/* glossy top highlight */}
-        <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/35 via-white/0 to-transparent" />
-        <span className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/25 ring-inset" />
-        {children}
+      <motion.span whileHover={{ y: -4, scale: 1.06 }} whileTap={{ scale: 0.88 }} className="grid size-[62px] rounded-[14px] sm:size-[70px]">
+        <IOSAppIcon app={app} size={70} className="size-full" />
       </motion.span>
-      <span className="text-[12px] font-medium text-fg">{label}</span>
+      <span className="text-[12px] font-medium tracking-tight text-fg">{label}</span>
     </>
   );
   const cls = "flex flex-col items-center gap-1.5 outline-none focus-visible:[&>span:first-child]:ring-4 focus-visible:[&>span:first-child]:ring-accent/50";
@@ -145,23 +135,10 @@ export function HomeScreen() {
         <Reveal className="col-span-2">
           <div className="glass squircle grid h-full grid-cols-4 place-items-center gap-y-5 p-5">
             {appSections.map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <AppIcon
-                  key={s.id}
-                  i={i}
-                  label={s.label}
-                  bg={`linear-gradient(145deg, color-mix(in oklab, ${s.color} 75%, white), ${s.color})`}
-                  onClick={() => scrollTo(s.id)}
-                >
-                  <Icon className="size-7" strokeWidth={2} />
-                </AppIcon>
-              );
+              return <AppIcon key={s.id} i={i} label={s.label} app={s.id} onClick={() => scrollTo(s.id)} />;
             })}
             {socialApps.map((a, i) => (
-              <AppIcon key={a.label} i={appSections.length + i} label={a.label} bg={a.bg} href={a.href}>
-                <a.Icon className="size-7" />
-              </AppIcon>
+              <AppIcon key={a.label} i={appSections.length + i} label={a.label} app={a.app} href={a.href} />
             ))}
           </div>
         </Reveal>
