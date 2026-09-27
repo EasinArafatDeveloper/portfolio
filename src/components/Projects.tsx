@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { projects, type Project } from "@/data/profile";
+import { setLive } from "@/lib/island";
 import { Reveal, Section, Tilt } from "./ui";
 import { GithubIcon } from "./BrandIcons";
 
@@ -63,11 +64,13 @@ function ProjectSheet({ p, onClose }: { p: Project; onClose: () => void }) {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     document.documentElement.style.overflow = "hidden";
+    setLive({ kind: "recording", label: p.name, startedAt: Date.now() });
     return () => {
+      setLive(null);
       window.removeEventListener("keydown", onKey);
       document.documentElement.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, p.name]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6">

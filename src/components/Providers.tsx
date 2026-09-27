@@ -2,6 +2,7 @@
 
 import { MotionConfig } from "motion/react";
 import Lenis from "lenis";
+import { notify } from "@/lib/island";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -60,6 +61,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (doc.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) doc.startViewTransition(apply);
     else apply();
     safeSet("theme", t);
+    notify({ kind: "theme", dark: t === "dark" });
   }, []);
 
   const setTint = useCallback((v: boolean) => {

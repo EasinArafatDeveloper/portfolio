@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, ChevronLeft, Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { profile } from "@/data/profile";
+import { notify } from "@/lib/island";
 import { Reveal, Section } from "./ui";
 
 type Msg = { from: "me" | "them"; text: string; id: number };
@@ -110,6 +111,7 @@ export function Messages() {
         setTyping(false);
         if (!res.ok) throw new Error(json.error || "Something went wrong.");
         setStep("done");
+        notify({ kind: "airdrop", title: `Sending to ${profile.shortName}…`, subtitle: `From ${data.name}` });
         await say("Delivered ✅ Thanks! I'll get back to you within 24 hours.", 500);
       } catch (err) {
         setTyping(false);
