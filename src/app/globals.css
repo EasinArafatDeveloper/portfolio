@@ -23,6 +23,9 @@
   --blob-4: #ffd27a;
   --wall-base: #e8edf7;
   --radius: 28px;
+  --clock-fill-top: rgba(255, 255, 255, 0.7);
+  --clock-fill-bottom: rgba(255, 255, 255, 0.28);
+  --clock-shadow: rgba(30, 40, 90, 0.28);
   color-scheme: light;
 }
 
@@ -43,6 +46,9 @@
   --blob-3: #0aa39a;
   --blob-4: #ff6a00;
   --wall-base: #05060a;
+  --clock-fill-top: rgba(255, 255, 255, 0.42);
+  --clock-fill-bottom: rgba(255, 255, 255, 0.12);
+  --clock-shadow: rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 

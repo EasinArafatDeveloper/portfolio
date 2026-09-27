@@ -5,6 +5,7 @@ import { ChevronUp, MapPin } from "lucide-react";
 import { useRef, useSyncExternalStore } from "react";
 import { profile } from "@/data/profile";
 import { Avatar } from "./Avatar";
+import { GlassClock } from "./GlassClock";
 import { useApp } from "./Providers";
 
 function subscribeClock(cb: () => void) {
@@ -35,7 +36,7 @@ export function LockScreen() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.86]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const blur = useTransform(scrollYProgress, [0, 1], ["blur(0px)", "blur(14px)"]);
+  const blur = useTransform(scrollYProgress, (p) => (p < 0.005 ? "none" : `blur(${(p * 14).toFixed(1)}px)`));
   const y = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
   return (
@@ -55,21 +56,12 @@ export function LockScreen() {
           {date || " "}
         </motion.p>
         <motion.h1
-          initial={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
+          initial={{ opacity: 0, scale: 0.92, filter: "blur(20px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ delay: 0.3, type: "spring", stiffness: 120, damping: 20 }}
-          // Padding gives background-clip:text room for glyphs that overhang the box (tight tracking), so edges aren't cut off.
-          className="font-display px-[0.08em] py-[0.04em] text-[clamp(96px,22vw,188px)] leading-[0.9] font-bold tracking-[-0.045em] tabular-nums"
-          style={{
-            background: "linear-gradient(180deg, var(--fg) 30%, color-mix(in oklab, var(--fg) 55%, transparent))",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-          }}
-          aria-label="Local time in Dhaka"
-          suppressHydrationWarning
+          className="-my-2 w-full"
         >
-          {time || "00:00"}
+          <GlassClock time={time || "00:00"} label={`Local time in Dhaka: ${time}`} />
         </motion.h1>
 
         {/* Name widget */}
