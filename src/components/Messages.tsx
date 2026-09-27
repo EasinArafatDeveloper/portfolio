@@ -180,7 +180,7 @@ export function Messages() {
               )}
             </AnimatePresence>
             <input ref={hp} name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-            <div className="flex items-center gap-2 rounded-full border border-sep bg-[var(--bg)]/40 py-1 pr-1 pl-4">
+            <div className="drop flex items-center gap-2 rounded-full py-1 pr-1 pl-4">
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

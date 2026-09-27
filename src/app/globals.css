@@ -88,6 +88,102 @@ html.lenis body {
 
 /* In the components layer so Tailwind utilities (fixed, absolute, rounded…) can override. */
 @layer components {
+/* ───────────── Water-drop glass ─────────────
+   Clear, barely blurred body with a thick bright rim, inner volume shading
+   and a specular streak — like a drop of water sitting on the page. */
+.drop {
+  --drop-fill: rgba(255, 255, 255, 0.1);
+  --drop-rim: rgba(255, 255, 255, 0.95);
+  --drop-rim-soft: rgba(255, 255, 255, 0.55);
+  --drop-glow: rgba(255, 255, 255, 0.45);
+  --drop-shade: rgba(20, 30, 60, 0.1);
+  --drop-drop: rgba(20, 30, 60, 0.16);
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(120% 140% at 30% 0%, rgba(255, 255, 255, 0.18), transparent 60%), var(--drop-fill);
+  -webkit-backdrop-filter: blur(3px) saturate(170%) brightness(1.06);
+  backdrop-filter: blur(3px) saturate(170%) brightness(1.06);
+  box-shadow:
+    inset 0 1.5px 0.5px -0.5px var(--drop-rim),
+    inset 0 -1.5px 1px -0.5px var(--drop-rim-soft),
+    inset 3px 4px 8px -4px var(--drop-glow),
+    inset -4px -6px 10px -6px var(--drop-shade),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 8px 22px -8px var(--drop-drop);
+  transition:
+    box-shadow 0.3s,
+    background 0.3s,
+    transform 0.2s;
+}
+/* Refracted rim: bright top-left edge fading round to a softer bottom-right edge */
+.drop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.25) 28%,
+    rgba(255, 255, 255, 0.05) 55%,
+    rgba(255, 255, 255, 0.35) 85%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+/* Specular streak near the top edge */
+.drop::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 38%;
+  top: 7%;
+  height: 32%;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: -1; /* behind text/icons */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  filter: blur(1.5px);
+  opacity: 0.55;
+}
+.drop:hover {
+  --drop-fill: rgba(255, 255, 255, 0.16);
+}
+.drop:focus-within {
+  box-shadow:
+    inset 0 1.5px 0.5px -0.5px var(--drop-rim),
+    inset 0 -1.5px 1px -0.5px var(--drop-rim-soft),
+    inset 3px 4px 8px -4px var(--drop-glow),
+    inset -4px -6px 10px -6px var(--drop-shade),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent),
+    0 8px 22px -8px var(--drop-drop);
+}
+[data-theme="dark"] .drop {
+  --drop-fill: rgba(255, 255, 255, 0.05);
+  --drop-rim: rgba(255, 255, 255, 0.55);
+  --drop-rim-soft: rgba(255, 255, 255, 0.25);
+  --drop-glow: rgba(255, 255, 255, 0.18);
+  --drop-shade: rgba(0, 0, 0, 0.35);
+  --drop-drop: rgba(0, 0, 0, 0.5);
+}
+[data-theme="dark"] .drop::before {
+  opacity: 0.6;
+}
+[data-theme="dark"] .drop::after {
+  opacity: 0.22;
+}
+[data-theme="dark"] .drop:hover {
+  --drop-fill: rgba(255, 255, 255, 0.09);
+}
+
 /* ───────────── Liquid glass material ───────────── */
 .glass {
   position: relative;
