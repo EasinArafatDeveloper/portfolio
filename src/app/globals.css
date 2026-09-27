@@ -97,6 +97,20 @@ body {
   display: none;
 }
 
+/* First-visit "hello" intro: cover the page before React mounts the overlay */
+html[data-intro] {
+  overflow: hidden;
+}
+html[data-intro="show"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(4, 6, 10, 0.62);
+  -webkit-backdrop-filter: blur(44px) saturate(140%);
+  backdrop-filter: blur(44px) saturate(140%);
+}
+
 /* Lenis */
 html.lenis,
 html.lenis body {

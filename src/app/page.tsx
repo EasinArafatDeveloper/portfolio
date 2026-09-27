@@ -9,6 +9,7 @@ import { ControlCenter } from "@/components/ControlCenter";
 import { Messages } from "@/components/Messages";
 import { QuickControls, Spotlight } from "@/components/Spotlight";
 import { profile } from "@/data/profile";
+import { HelloIntro } from "@/components/HelloIntro";
 
 export default function Home() {
   return (
@@ -29,6 +30,7 @@ export default function Home() {
       </footer>
       <Spotlight />
       <QuickControls />
+      <HelloIntro />
     </>
   );
 }

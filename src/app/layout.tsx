@@ -26,8 +26,8 @@ export const viewport: Viewport = {
   ],
 };
 
-// Sets the theme before paint so there is no light/dark flash.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t||t==='system'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t;if(localStorage.getItem('tint')==='true')document.documentElement.dataset.tint='true'}catch(e){document.documentElement.dataset.theme='light'}})();`;
+// Sets theme (and first-visit intro flag) before paint so nothing flashes.
+const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t||t==='system'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t;if(localStorage.getItem('tint')==='true')document.documentElement.dataset.tint='true';if(!localStorage.getItem('hello-intro-seen'))document.documentElement.dataset.intro='show'}catch(e){document.documentElement.dataset.theme='light'}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

@@ -359,8 +359,15 @@ export function DynamicIsland() {
 
   // Welcome intro
   useEffect(() => {
-    const t = setTimeout(() => notify({ kind: "welcome" }), 400);
-    return () => clearTimeout(t);
+    let t: ReturnType<typeof setTimeout>;
+    const start = () => (t = setTimeout(() => notify({ kind: "welcome" }), 400));
+    // First visit: wait for the "hello" intro to finish.
+    if (document.documentElement.dataset.intro) window.addEventListener("intro-done", start, { once: true });
+    else start();
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("intro-done", start);
+    };
   }, []);
 
   // Welcome stages: small "Hi" → big waving hand → welcome banner
@@ -385,7 +392,7 @@ export function DynamicIsland() {
   const nudged = useRef(false);
   useEffect(() => {
     if (active !== "lock" || nudged.current) return;
-    let t = setTimeout(fire, 12000);
+    let t: ReturnType<typeof setTimeout> | undefined;
     function fire() {
       nudged.current = true;
       notify({ kind: "findMy" });
@@ -394,10 +401,14 @@ export function DynamicIsland() {
       clearTimeout(t);
       if (!nudged.current) t = setTimeout(fire, 12000);
     };
+    // Don't count time spent watching the first-visit intro.
+    if (document.documentElement.dataset.intro) window.addEventListener("intro-done", reset, { once: true });
+    else reset();
     window.addEventListener("scroll", reset, { passive: true });
     return () => {
       clearTimeout(t);
       window.removeEventListener("scroll", reset);
+      window.removeEventListener("intro-done", reset);
     };
   }, [active]);
 
