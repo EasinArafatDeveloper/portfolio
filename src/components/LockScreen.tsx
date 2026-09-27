@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { ChevronUp, MapPin } from "lucide-react";
 import { useRef, useSyncExternalStore } from "react";
 import { profile } from "@/data/profile";
+import { Avatar } from "./Avatar";
 import { useApp } from "./Providers";
 
 function subscribeClock(cb: () => void) {
@@ -77,9 +78,7 @@ export function LockScreen() {
           transition={{ delay: 0.55 }}
           className="glass mt-4 flex items-center gap-3 rounded-full py-2 pr-5 pl-2"
         >
-          <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-[#0a84ff] via-[#5e5ce6] to-[#bf5af2] text-sm font-bold text-white">
-            {profile.shortName[0]}
-          </span>
+          <Avatar size={36} priority />
           <span className="text-[15px] font-semibold tracking-tight">{profile.name}</span>
           <span className="flex items-center gap-1 text-[13px] text-fg-2">
             <MapPin className="size-3.5" /> {profile.location.split(",")[0]}

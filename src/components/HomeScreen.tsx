@@ -5,6 +5,7 @@ import { ArrowUpRight, MapPin, Sparkles } from "lucide-react";
 import { profile, stats } from "@/data/profile";
 import { sections } from "@/data/sections";
 import { useApp } from "./Providers";
+import { Avatar } from "./Avatar";
 import { CountUp, Magnetic, Reveal, Section, Tilt } from "./ui";
 import { FacebookIcon, GithubIcon, LinkedinIcon } from "./BrandIcons";
 
@@ -79,9 +80,7 @@ export function HomeScreen() {
             <div className="glass glass-refract squircle flex h-full flex-col p-6 sm:p-8">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-[#0a84ff] via-[#5e5ce6] to-[#bf5af2] text-2xl font-bold text-white sm:size-20 sm:text-3xl">
-                    {profile.shortName[0]}
-                  </div>
+                  <Avatar size={80} className="max-sm:!size-16" />
                   <span className="absolute right-0.5 bottom-0.5 size-4 rounded-full border-[3px] border-white bg-[#30d158] dark:border-black" />
                 </div>
                 <div>

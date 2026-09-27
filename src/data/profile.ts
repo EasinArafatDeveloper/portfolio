@@ -5,6 +5,7 @@ export const profile = {
   name: "Easin Arafat",
   shortName: "Easin",
   title: "Full-Stack Developer",
+  avatar: "/avatar.jpg",
   tagline: "I build fast, beautiful web products — from Chrome extensions to e-commerce brands.",
   location: "Dhaka, Bangladesh",
   timezone: "Asia/Dhaka",

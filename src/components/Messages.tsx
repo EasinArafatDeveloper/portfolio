@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, ChevronLeft, Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { profile } from "@/data/profile";
+import { Avatar } from "./Avatar";
 import { notify } from "@/lib/island";
 import { Reveal, Section } from "./ui";
 
@@ -132,9 +133,7 @@ export function Messages() {
           <div className="flex items-center justify-between border-b border-sep px-4 pt-4 pb-3">
             <ChevronLeft className="size-6 text-accent" />
             <div className="flex flex-col items-center">
-              <div className="grid size-12 place-items-center rounded-full bg-gradient-to-br from-[#0a84ff] via-[#5e5ce6] to-[#bf5af2] text-lg font-bold text-white">
-                {profile.shortName[0]}
-              </div>
+              <Avatar size={48} />
               <p className="mt-1 text-[12px] font-semibold">{profile.name} ›</p>
             </div>
             <Video className="size-6 text-accent" />

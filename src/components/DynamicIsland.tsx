@@ -5,6 +5,7 @@ import { ArrowUp, BellOff, Hammer, Link2, Moon, Search, Sun } from "lucide-react
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sections } from "@/data/sections";
 import { profile } from "@/data/profile";
+import { Avatar } from "./Avatar";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { dismiss, notify, useIslandActivity, type ShownActivity } from "@/lib/island";
 import { useApp } from "./Providers";
@@ -378,9 +379,7 @@ export function DynamicIsland() {
       node: (
         <div ref={menuRef} className="w-full self-start p-3">
           <div className="mb-3 flex items-center gap-3 px-1">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#0a84ff] to-[#5e5ce6] text-lg font-bold">
-              {profile.shortName[0]}
-            </div>
+            <Avatar size={40} />
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold">{profile.name}</p>
               <p className="truncate text-[12px] text-white/55">Now building · {profile.nowBuilding}</p>
