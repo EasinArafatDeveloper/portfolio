@@ -10,22 +10,10 @@ import { useActiveSection } from "@/hooks/useActiveSection";
 import { dismiss, notify, useIslandActivity, type ShownActivity } from "@/lib/island";
 import { useApp } from "./Providers";
 import { IOSAppIcon } from "./IOSAppIcon";
+import { EMOJI, Emoji3D } from "./Emoji3D";
 
 const ids = sections.map((s) => s.id);
 const spring = { type: "spring" as const, stiffness: 380, damping: 32, mass: 0.9 };
-
-// Microsoft Fluent 3D emoji (MIT) — close to the iOS 3D emoji look.
-const EMOJI = {
-  wave: "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Waving%20hand/Default/3D/waving_hand_3d_default.png",
-  sparkles: "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Sparkles/3D/sparkles_3d.png",
-};
-
-function Emoji3D({ src, alt, size, fallback }: { src: string; alt: string; size: number; fallback: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return <span style={{ fontSize: size * 0.85, lineHeight: 1 }}>{fallback}</span>;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} width={size} height={size} draggable={false} onError={() => setFailed(true)} className="select-none" />;
-}
 
 function WavingHand({ size }: { size: number }) {
   return (
@@ -456,7 +444,7 @@ export function DynamicIsland() {
               </kbd>
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
+          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
             {sections.map((s) => {
               const isActive = s.id === active;
               return (

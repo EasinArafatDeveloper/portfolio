@@ -1,8 +1,9 @@
-import { Award, Briefcase, Home, LayoutGrid, MessageCircle, Sparkles, SlidersHorizontal } from "lucide-react";
+import { Award, Briefcase, Code, Home, LayoutGrid, MessageCircle, Sparkles, SlidersHorizontal } from "lucide-react";
 
 export const sections = [
   { id: "lock", label: "Home", icon: Home, color: "#0a84ff" },
   { id: "apps", label: "About", icon: LayoutGrid, color: "#5e5ce6" },
+  { id: "build", label: "Process", icon: Code, color: "#8b6bff" },
   { id: "projects", label: "Projects", icon: Sparkles, color: "#ff375f" },
   { id: "experience", label: "Experience", icon: Briefcase, color: "#ff9f0a" },
   { id: "achievements", label: "Achievements", short: "Awards", icon: Award, color: "#ffd60a" },

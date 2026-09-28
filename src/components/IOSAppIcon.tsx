@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 
-export type AppId = "lock" | "apps" | "projects" | "experience" | "achievements" | "skills" | "contact" | "github" | "linkedin" | "facebook";
+export type AppId = "lock" | "apps" | "build" | "projects" | "experience" | "achievements" | "skills" | "contact" | "github" | "linkedin" | "facebook";
 
 type Ids = { glyph: string; accent: string; uid: string };
 type Def = {
@@ -47,6 +47,19 @@ const APPS: Record<AppId, Def> = {
       <g fill={`url(#${accent})`}>
         <circle cx="50" cy="35" r="15.5" />
         <path d="M23 75 C23 60 35 54 50 54 C65 54 77 60 77 75 C77 77.5 75.5 79 73 79 H27 C24.5 79 23 77.5 23 75 Z" />
+      </g>
+    ),
+  },
+
+  // Process — indigo, code brackets
+  build: {
+    bg: ["#9a7bff", "#3d2bb0"],
+    tint: "#ddd3ff",
+    glyph: ({ glyph }) => (
+      <g fill="none" stroke={`url(#${glyph})`} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M37 33 L21 50 L37 67" strokeWidth="7.5" />
+        <path d="M63 33 L79 50 L63 67" strokeWidth="7.5" />
+        <path d="M55 27 L45 73" strokeWidth="6.5" />
       </g>
     ),
   },

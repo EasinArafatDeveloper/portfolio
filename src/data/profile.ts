@@ -9,14 +9,14 @@ export const profile = {
   // Hero headline: `headline.lead` is highlighted, `headline.rest` follows it.
   headline: { lead: "Software Engineer", rest: "turning ideas into fast, reliable products." },
   tagline:
-    "I design and build full-stack web apps, SaaS tools and Chrome extensions with React, Next.js, Node.js and MongoDB — from first sketch to production.",
-  focus: ["Full-stack web apps", "SaaS & Chrome extensions", "E-commerce platforms"],
+    "I design and build SaaS products, full-stack web apps and Chrome extensions with React, Next.js, Node.js and MongoDB — from first sketch to production.",
+  focus: ["SaaS products", "Full-stack web apps", "Chrome extensions", "E-commerce"],
   location: "Dhaka, Bangladesh",
   timezone: "Asia/Dhaka",
   status: "Available for freelance & full-time",
   nowBuilding: "FB Ad Lead Finder",
   about:
-    "I'm a software engineer who loves turning ideas into polished, production-ready products. I work across the stack — React & Next.js on the front, Node.js & MongoDB on the back — and I care deeply about details: motion, performance and the feeling a product gives you.", // TODO: personalise
+    "I'm a software engineer who loves turning ideas into polished, production-ready products. I build SaaS products end to end — auth, subscriptions, dashboards and APIs — with React & Next.js on the front and Node.js & MongoDB on the back, and I care deeply about details: motion, performance and the feeling a product gives you.", // TODO: personalise
   email: "hello@example.com", // TODO: real contact email
   socials: {
     github: "https://github.com/Easin2023",
@@ -173,4 +173,4 @@ export const skillGroups: { title: string; skills: Skill[] }[] = [
   },
 ];
 
-export const tools = ["Git", "GitHub", "Figma", "VS Code", "Vercel", "Chrome APIs", "Postman", "Framer Motion"];
+export const tools = ["Git", "GitHub", "Stripe", "Figma", "VS Code", "Vercel", "Chrome APIs", "Postman", "Framer Motion"];

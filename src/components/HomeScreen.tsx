@@ -59,7 +59,8 @@ function AppIcon({
 
 export function HomeScreen() {
   const { scrollTo } = useApp();
-  const appSections = sections.filter((s) => s.id !== "lock" && s.id !== "apps");
+  // "build" is left out so the grid stays a tidy 4×2 with the socials.
+  const appSections = sections.filter((s) => s.id !== "lock" && s.id !== "apps" && s.id !== "build");
 
   return (
     <Section id="apps" eyebrow="About me" title={<>Hello, I&apos;m {profile.shortName}.</>}>

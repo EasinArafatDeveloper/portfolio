@@ -2,6 +2,7 @@ import { Wallpaper } from "@/components/Wallpaper";
 import { DynamicIsland } from "@/components/DynamicIsland";
 import { LockScreen } from "@/components/LockScreen";
 import { HomeScreen } from "@/components/HomeScreen";
+import { BuildShowcase } from "@/components/BuildShowcase";
 import { Projects } from "@/components/Projects";
 import { Experience } from "@/components/Experience";
 import { Achievements } from "@/components/Achievements";
@@ -19,6 +20,7 @@ export default function Home() {
       <main>
         <LockScreen />
         <HomeScreen />
+        <BuildShowcase />
         <Projects />
         <Experience />
         <Achievements />
